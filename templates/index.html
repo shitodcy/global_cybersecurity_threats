@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analisis Siber</title>
+    <!-- Framework & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    
+    <!-- Library Grafik -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Custom CSS File -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container-fluid">
+        <h1>Dashboard Analisis Ancaman Siber Global</h1>
+        <p class="subtitle">Analisis Interaktif Data Ancaman dari Tahun 2015-2024</p>
+
+        <!-- Key Performance Indicators (KPIs) -->
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6"><div class="card kpi-card"><div class="icon-wrapper" style="--icon-color: var(--dracula-cyan);"><i class="bi bi-shield-exclamation"></i></div><div><h5>Total Insiden</h5><h2>{{ kpi.total_incidents }}</h2></div></div></div>
+            <div class="col-lg-4 col-md-6"><div class="card kpi-card"><div class="icon-wrapper" style="--icon-color: var(--dracula-red);"><i class="bi bi-cash-coin"></i></div><div><h5>Total Kerugian</h5><h2>{{ kpi.total_loss }}</h2></div></div></div>
+            <div class="col-lg-4 col-md-12"><div class="card kpi-card"><div class="icon-wrapper" style="--icon-color: var(--dracula-green);"><i class="bi bi-people-fill"></i></div><div><h5>Pengguna Terdampak</h5><h2>{{ kpi.total_users_affected }}</h2></div></div></div>
+        </div>
+
+        <hr class="my-4" style="border-color: var(--dracula-comment);">
+
+        <h3>Analisis Data Eksploratif (EDA)</h3>
+        <!-- ✅ PERUBAHAN LAYOUT: Grafik baru ditambahkan di sini -->
+        <div class="row g-4">
+            <!-- Bar Chart (Top 15 Negara) -->
+            <div class="col-lg-6">
+                <div class="card chart-container"><div id="bar-chart"></div></div>
+            </div>
+            <!-- Stacked Bar Chart (Komposisi Sektor) -->
+            <div class="col-lg-6">
+                <div class="card chart-container"><div id="sector-composition-chart"></div></div>
+            </div>
+            <!-- Pie Chart (Proporsi Serangan) -->
+            <div class="col-lg-6">
+                <div class="card chart-container"><div id="pie-chart"></div></div>
+            </div>
+            <!-- Yearly Trend Chart (Chart.js) -->
+            <div class="col-lg-6">
+               <div class="card chart-container">
+                   <h5 style="color: var(--dracula-purple); text-align: center; margin-bottom: 1rem;">Tren Laporan Serangan per Tahun</h5>
+                   <div class="chartjs-wrapper">
+                       <canvas id="yearlyTrendChartCanvas"></canvas>
+                   </div>
+               </div>
+            </div>
+        </div>
+
+        <hr class="my-4" style="border-color: var(--dracula-comment);">
+
+        <h3>Analisis dan Evaluasi Model Regresi Linear</h3>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6"><div class="card chart-container"><div id="heatmap-chart"></div></div></div>
+            <div class="col-lg-4 col-md-6"><div class="card chart-container"><div id="model-fit-chart"></div></div></div>
+            <div class="col-lg-4 col-md-12"><div class="card chart-container"><div id="eval-chart"></div></div></div>
+        </div>
+
+        <footer>
+            <p>Dasbor Interaktif | Dibuat dengan Flask, Plotly & Chart.js</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Skrip untuk Plotly ---
+        const config = { responsive: true, displaylogo: false };
+        function safePlot(elementId, chartJson) {
+            const el = document.getElementById(elementId);
+            if (!el) { return; }
+            try {
+                if (!chartJson || chartJson === 'null') {
+                    el.innerHTML = `<div class="alert-msg">Data tidak tersedia untuk grafik ini.</div>`;
+                    return;
+                }
+                const chart = JSON.parse(chartJson);
+                Plotly.newPlot(elementId, chart.data, chart.layout, config);
+            } catch (e) {
+                el.innerHTML = `<div class="alert-msg alert-danger">Terjadi kesalahan saat memuat grafik.</div>`;
+            }
+        }
+        
+        // Render grafik Plotly
+        safePlot('bar-chart', '{{ bar_chart | safe }}');
+        safePlot('pie-chart', '{{ pie_chart | safe }}');
+        // ✅ TAMBAHAN: Render grafik baru
+        safePlot('sector-composition-chart', '{{ sector_composition_chart | safe }}');
+        safePlot('heatmap-chart', '{{ heatmap_chart | safe }}');
+        safePlot('model-fit-chart', '{{ model_fit_chart | safe }}');
+        safePlot('eval-chart', '{{ eval_chart | safe }}');
+
+        // --- Skrip untuk Chart.js ---
+        const yearlyTrendCanvas = document.getElementById('yearlyTrendChartCanvas');
+        if (yearlyTrendCanvas) {
+            const labelsJson = '{{ yearly_trend_labels | tojson | safe }}';
+            const dataJson = '{{ yearly_trend_data | tojson | safe }}';
+            if (labelsJson && dataJson && labelsJson !== 'None' && dataJson !== 'None') {
+                const labels = JSON.parse(labelsJson);
+                const data = JSON.parse(dataJson);
+                new Chart(yearlyTrendCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Jumlah Serangan Tercatat',
+                            data: data,
+                            fill: false,
+                            borderColor: 'rgb(189, 147, 249)',
+                            backgroundColor: 'rgb(189, 147, 249)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: false, grid: { color: 'rgba(98, 114, 164, 0.5)' }, ticks: { color: '#f8f8f2' } },
+                            x: { grid: { color: 'rgba(98, 114, 164, 0.5)' }, ticks: { color: '#f8f8f2' } }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            } else {
+                yearlyTrendCanvas.parentElement.innerHTML = `<div class="alert-msg">Data tidak tersedia untuk grafik tren tahunan.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

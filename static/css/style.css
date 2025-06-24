@@ -1,0 +1,117 @@
+/* Palet Warna Tema Dracula */
+:root {
+    --dracula-bg: #282a36;
+    --dracula-line: #44475a;
+    --dracula-fg: #f8f8f2;
+    --dracula-comment: #6272a4;
+    --dracula-cyan: #8be9fd;
+    --dracula-green: #50fa7b;
+    --dracula-orange: #ffb86c;
+    --dracula-pink: #ff79c9;
+    --dracula-purple: #bd93f9;
+    --dracula-red: #ff5555;
+    --dracula-yellow: #f1fa8c;
+}
+
+/* Gaya Dasar Body */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--dracula-bg);
+    color: var(--dracula-fg);
+}
+
+/* Penampung Utama */
+.container-fluid {
+    padding: 2rem;
+}
+
+/* Gaya Kartu */
+.card {
+    background-color: var(--dracula-line);
+    border: 1px solid var(--dracula-comment);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    height: 100%; /* Memastikan semua kartu dalam satu baris punya tinggi yang sama */
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Kartu KPI */
+.kpi-card {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1.5rem;
+}
+
+.kpi-card .icon-wrapper {
+    font-size: 2.5rem;
+    color: var(--icon-color, var(--dracula-cyan));
+    flex-shrink: 0;
+}
+
+.kpi-card h5 {
+    color: var(--dracula-comment);
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.kpi-card h2 {
+    color: var(--dracula-fg);
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+
+/* Penampung Grafik */
+.chart-container {
+    padding: 1.5rem;
+    /* ✅ PERBAIKAN: Menambahkan ini untuk mengontrol ukuran kanvas Chart.js */
+    position: relative; 
+}
+
+/* Judul */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+}
+
+h1 {
+    color: var(--dracula-fg);
+}
+
+h3 {
+    color: var(--dracula-cyan);
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.subtitle {
+    color: var(--dracula-comment);
+    margin-top: -10px;
+    margin-bottom: 2rem;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 1.5rem;
+    color: var(--dracula-comment);
+    border-top: 1px solid var(--dracula-line);
+}
+
+/* Pesan Error / Data Tidak Tersedia di dalam Grafik */
+.alert-msg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 300px; /* Memberi tinggi minimal agar kotak tidak kolaps */
+    padding: 2rem;
+    text-align: center;
+    color: var(--dracula-yellow);
+    font-style: italic;
+}

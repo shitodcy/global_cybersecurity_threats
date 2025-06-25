@@ -1,4 +1,3 @@
-# --- 1. Impor Pustaka ---
 # Mengimpor semua pustaka yang dibutuhkan untuk aplikasi.
 import os
 import pandas as pd
@@ -19,7 +18,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 
-# --- 2. Konfigurasi Awal ---
 # Mengatur logging, gaya default Matplotlib, dan aplikasi Flask.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 plt.style.use('dark_background')
@@ -32,7 +30,6 @@ plt.rcParams['axes.titlecolor'] = '#f8f8f2' # Warna judul disesuaikan agar seras
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-# --- 3. Palet Warna ---
 # Mendefinisikan palet warna tema Dracula untuk konsistensi visual.
 dracula = {
     'background': '#282a36', 'current_line': '#44475a', 'foreground': '#f8f8f2',
@@ -195,7 +192,6 @@ def create_model_visualizations(df):
 
     return model_charts
 
-# --- 4. Route Utama Aplikasi ---
 # Mendefinisikan apa yang terjadi saat pengguna mengunjungi halaman utama.
 @app.route('/')
 def dashboard():
@@ -228,7 +224,6 @@ def dashboard():
         logging.critical(f"Error fatal di route '/': {e}", exc_info=True)
         return f"<h1>Terjadi Kesalahan Kritis</h1><p>Error: {e}</p>"
 
-# --- 5. Jalankan Aplikasi ---
 # Memastikan server pengembangan Flask berjalan saat skrip dieksekusi.
 if __name__ == '__main__':
     app.run(host='0.0.0.0')

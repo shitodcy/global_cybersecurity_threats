@@ -1,4 +1,5 @@
-/* Palet Warna Tema Dracula */
+/* --- 1. Variabel Warna & Gaya Dasar --- */
+/* Mendefinisikan palet warna Dracula dan gaya dasar untuk body. */
 :root {
     --dracula-bg: #282a36;
     --dracula-line: #44475a;
@@ -12,106 +13,127 @@
     --dracula-red: #ff5555;
     --dracula-yellow: #f1fa8c;
 }
-
-/* Gaya Dasar Body */
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--dracula-bg);
     color: var(--dracula-fg);
 }
-
-/* Penampung Utama */
 .container-fluid {
     padding: 2rem;
 }
 
-/* Gaya Kartu */
+/* --- 2. Gaya Kartu --- */
+/* Mengatur tampilan semua kartu di dasbor. */
 .card {
     background-color: var(--dracula-line);
     border: 1px solid var(--dracula-comment);
     border-radius: 12px;
+    height: 100%; 
+    display: flex; 
+    flex-direction: column;
     transition: all 0.3s ease;
-    height: 100%; /* Memastikan semua kartu dalam satu baris punya tinggi yang sama */
 }
-
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
-/* Kartu KPI */
+/* --- 3. Gaya Kartu KPI --- */
+/* Mengatur gaya khusus untuk kartu ringkasan data di bagian atas. */
 .kpi-card {
     display: flex;
-    align-items: center;
+    flex-direction: column; /* Mengubah arah menjadi vertikal */
+    justify-content: center; /* Menengahkan konten secara vertikal */
+    align-items: center; /* Menengahkan konten secara horizontal */
+    text-align: center; /* Memastikan teks di tengah */
     padding: 1.5rem;
-    gap: 1.5rem;
 }
-
 .kpi-card .icon-wrapper {
     font-size: 2.5rem;
     color: var(--icon-color, var(--dracula-cyan));
-    flex-shrink: 0;
+    margin-bottom: 1rem; /* Memberi jarak antara ikon dan teks */
 }
-
 .kpi-card h5 {
     color: var(--dracula-comment);
     margin-bottom: 0.25rem;
     font-size: 1rem;
 }
-
 .kpi-card h2 {
     color: var(--dracula-fg);
     font-weight: 600;
     margin-bottom: 0;
 }
 
-
-/* Penampung Grafik */
+/* --- 4. Gaya Penampung Grafik --- */
+/* Mengatur penampung untuk semua jenis grafik. */
 .chart-container {
     padding: 1.5rem;
-    /* ✅ PERBAIKAN: Menambahkan ini untuk mengontrol ukuran kanvas Chart.js */
-    position: relative; 
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.chartjs-wrapper {
+    position: relative;
+    flex-grow: 1; 
+    min-height: 300px;
+}
+.image-container {
+    padding: 1rem;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    min-height: 450px; 
+}
+.image-container img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain; 
+    max-height: 100%;
 }
 
-/* Judul */
-h1, h2, h3, h4, h5, h6 {
-    font-weight: 600;
+/* --- 5. Gaya Teks & Judul --- */
+/* Mengatur tampilan tipografi di seluruh dasbor. */
+h1, h2, h3, h4, h5, h6 { font-weight: 600; }
+h1 { color: var(--dracula-fg); }
+h3 { color: var(--dracula-cyan); margin-top: 1rem; margin-bottom: 1.5rem; }
+.subtitle { color: var(--dracula-comment); margin-top: -10px; margin-bottom: 2rem; }
+.chart-title {
+    color: var(--dracula-purple); 
+    text-align: center; 
+    margin-bottom: 1rem;
 }
 
-h1 {
-    color: var(--dracula-fg);
+/* --- 6. Lain-lain --- */
+/* Gaya untuk footer dan pesan peringatan. */
+hr {
+    border: none;
+    height: 1px;
+    background-color: var(--dracula-comment);
+    margin: 2.5rem 0;
 }
-
-h3 {
-    color: var(--dracula-cyan);
-    margin-top: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.subtitle {
-    color: var(--dracula-comment);
-    margin-top: -10px;
-    margin-bottom: 2rem;
-}
-
-/* Footer */
 footer {
     text-align: center;
     margin-top: 3rem;
     padding: 1.5rem;
+}
+footer a {
+    font-size: 2rem;
     color: var(--dracula-comment);
-    border-top: 1px solid var(--dracula-line);
+    transition: color 0.3s ease;
+}
+footer a:hover {
+    color: var(--dracula-fg);
 }
 
-/* Pesan Error / Data Tidak Tersedia di dalam Grafik */
 .alert-msg {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
-    min-height: 300px; /* Memberi tinggi minimal agar kotak tidak kolaps */
+    min-height: 300px;
     padding: 2rem;
     text-align: center;
     color: var(--dracula-yellow);
     font-style: italic;
+    width: 100%;
 }

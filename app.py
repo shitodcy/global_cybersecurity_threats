@@ -231,4 +231,4 @@ def dashboard():
 # --- 5. Jalankan Aplikasi ---
 # Memastikan server pengembangan Flask berjalan saat skrip dieksekusi.
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0')

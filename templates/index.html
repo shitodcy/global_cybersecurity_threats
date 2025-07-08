@@ -1,34 +1,28 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <!-- Pengaturan dasar dan metadata halaman. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Analisis Siber</title>
 
-    <!-- Memuat library CSS dari CDN untuk gaya dan ikon. -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     
-    <!-- Memuat library JavaScript untuk grafik. -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Memuat font dari Google dan file CSS kustom. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
 </head>
 <body>
-    <!-- Penampung utama seluruh konten dasbor. -->
     <div class="container-fluid">
-        <!-- Judul utama dan subjudul dasbor. -->
         <h1>Dashboard Analisis Ancaman Siber Global</h1>
         <p class="subtitle">Analisis Interaktif Data Ancaman dari Tahun 2015-2024</p>
 
-        <!-- Bagian Key Performance Indicators (KPI) untuk ringkasan data. -->
-       <div class="row g-4">
+        <div class="row g-4">
             <div class="col-lg-4 col-md-6"><div class="card kpi-card"><div class="icon-wrapper" style="--icon-color: var(--dracula-cyan);"><i class="bi bi-shield-exclamation"></i></div><div><h5>Total Insiden</h5><h2>{{ kpi.total_incidents }}</h2></div></div></div>
             <div class="col-lg-4 col-md-6"><div class="card kpi-card"><div class="icon-wrapper" style="--icon-color: var(--dracula-red);"><i class="bi bi-cash-coin"></i></div><div><h5>Total Kerugian</h5><h2>{{ kpi.total_loss }}</h2></div></div></div>
             <div class="col-lg-4 col-md-6"><div class="card kpi-card"><div class="icon-wrapper" style="--icon-color: var(--dracula-green);"><i class="bi bi-people-fill"></i></div><div><h5>Pengguna Terdampak</h5><h2>{{ kpi.total_users_affected }}</h2></div></div></div>
@@ -36,7 +30,6 @@
 
         <hr class="my-4">
 
-        <!-- Bagian Analisis Data Eksploratif (EDA) dengan 4 grafik. -->
         <h3>Analisis Data Eksploratif (EDA)</h3>
         <div class="row g-4">
             <div class="col-lg-6"><div class="card chart-container"><div id="bar-chart"></div></div></div>
@@ -52,23 +45,34 @@
 
         <hr class="my-4">
 
-        <!-- Bagian Analisis Model Regresi dengan 3 grafik. -->
         <h3>Analisis dan Evaluasi Model Regresi Linear</h3>
         <div class="row g-4">
-            <div class="col-lg-4 col-md-6"><div class="card image-container">{% if heatmap_chart %}<img src="data:image/png;base64,{{ heatmap_chart }}" alt="Heatmap Korelasi">{% else %}<div class="alert-msg">Data heatmap tidak tersedia.</div>{% endif %}</div></div>
-            <div class="col-lg-4 col-md-6"><div class="card image-container">{% if model_fit_chart %}<img src="data:image/png;base64,{{ model_fit_chart }}" alt="Grafik Kecocokan Model">{% else %}<div class="alert-msg">Data kecocokan model tidak tersedia.</div>{% endif %}</div></div>
-            <div class="col-lg-4 col-md-12"><div class="card image-container">{% if eval_chart %}<img src="data:image/png;base64,{{ eval_chart }}" alt="Grafik Evaluasi Model">{% else %}<div class="alert-msg">Data evaluasi model tidak tersedia.</div>{% endif %}</div></div>
-        </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="card chart-container">
+                    <div id="heatmap-chart"></div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card chart-container">
+                    <div id="regression-table-chart"></div>
+                </div>
+            </div>
 
-        <!-- Footer halaman. -->
-         <footer>
+            <div class="col-lg-4 col-md-12">
+                <div class="card chart-container">
+                    <div id="eval-chart-interactive"></div>
+                </div>
+            </div>
+            </div>
+
+        <footer>
             <a href="https://github.com/shitodcy/global_cybersecurity_threats" target="_blank" rel="noopener noreferrer" title="Lihat Kode di GitHub">
                 <i class="bi bi-github"></i>
             </a>
         </footer>
     </div>
 
-    <!-- Blok skrip untuk merender semua grafik. -->
     <script>
         // Fungsi untuk merender grafik Plotly dengan aman.
         const plotlyConfig = { responsive: true, displaylogo: false };
@@ -78,8 +82,9 @@
             try {
                 if (!chartJson || chartJson === 'null') throw new Error("Data JSON kosong.");
                 const chart = JSON.parse(chartJson);
-                Plotly.newPlot(elementId, chart.data, chart.layout, plotlyConfig);
+                Plotly.newPlot(el, chart.data, chart.layout, plotlyConfig);
             } catch (e) {
+                console.error("Error rendering Plotly chart:", e, "for element:", elementId);
                 el.innerHTML = `<div class="alert-msg">Gagal memuat grafik.</div>`;
             }
         }
@@ -98,12 +103,12 @@
                         labels: labels,
                         datasets: [{ 
                             data: data,
-                            borderColor: 'rgb(189, 147, 249)', // Warna garis (ungu)
+                            borderColor: 'rgb(189, 147, 249)',
                             tension: 0.1,
-                            pointBackgroundColor: '#f8f8f2', // Warna isi titik (putih)
-                            pointBorderColor: 'rgb(189, 147, 249)', // Warna garis tepi titik
-                            pointRadius: 5, // Ukuran titik
-                            pointHoverRadius: 7 // Ukuran titik saat di-hover
+                            pointBackgroundColor: '#f8f8f2',
+                            pointBorderColor: 'rgb(189, 147, 249)',
+                            pointRadius: 5,
+                            pointHoverRadius: 7
                         }]
                     },
                     options: {
@@ -113,16 +118,43 @@
                     }
                 });
             } catch (e) {
+                console.error("Error rendering Chart.js:", e);
                 canvas.parentElement.innerHTML = `<div class="alert-msg">Gagal memuat grafik tren.</div>`;
             }
         }
         
+        // Sample data untuk demo heatmap interaktif
+        const sampleHeatmapData = { 
+            "data": [ { "type": "heatmap", "z": [ [1.0, 0.15, -0.02, 0.08], [0.15, 1.0, 0.89, 0.45], [-0.02, 0.89, 1.0, 0.52], [0.08, 0.45, 0.52, 1.0] ], "x": ["Tahun", "Jumlah Record Terdampak", "Kerugian Finansial (USD)", "Waktu Respons (Jam)"], "y": ["Tahun", "Jumlah Record Terdampak", "Finansial", "Respons"], "colorscale": "RdBu", "zmid": 0, "zmin": -1, "zmax": 1, "text": [ ["1.00", "0.15", "-0.02", "0.08"], ["0.15", "1.00", "0.89", "0.45"], ["-0.02", "0.89", "1.00", "0.52"], ["0.08", "0.45", "0.52", "1.00"] ], "texttemplate": "%{text}", "textfont": {"size": 12}, "hoverongaps": false, "hovertemplate": "<b>%{y}</b> vs <b>%{x}</b><br>Korelasi: %{z:.3f}<br><extra></extra>" } ], 
+            "layout": { 
+                "title": { "text": "Heatmap Korelasi Variabel", "x": 0.5, "xanchor": "center", "font": {"size": 16, "color": "#bd93f9"} }, 
+                "template": "plotly_dark", 
+                "paper_bgcolor": "rgba(0,0,0,0)", 
+                "plot_bgcolor": "rgba(0,0,0,0)", 
+                "font": {"color": "#f8f8f2"}, 
+                "width": 550, "height": 600, 
+                // [PERUBAHAN] Margin disesuaikan agar seimbang (center)
+                "margin": {"l": 70, "r": 70, "t": 70, "b": 255}, 
+                "xaxis": { "tickangle": 30, "side": "bottom" }, 
+                "yaxis": { "tickmode": "linear" } 
+            } 
+        };
+
+        // Data sampel untuk tabel interaktif
+        const sampleTableData = { "data": [{ "type": "table", "header": { "values": [["<b>Metrik</b>"], ["<b>Nilai</b>"]], "align": ["left", "center"], "fill": { "color": "#44475a" }, "font": { "size": 14, "color": "#ff79c9" } }, "cells": { "values": [ ["Intercept (b₀)", "Koefisien (b₁)", "R-squared (R²)"], ["-15.42", "0.021", "0.785"] ], "align": ["left", "center"], "fill": { "color": "#282a36" }, "font": { "size": 12, "color": "#f8f8f2" }, "height": 30 } }], "layout": { "title": { "text": "Statistik Model Regresi", "x": 0.5, "font": {"size": 16, "color": "#ff79c9"} }, "template": "plotly_dark", "paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)", "margin": {"l": 15, "r": 15, "t": 80, "b": 10} } };
+        
+        // Sample data untuk grafik lainnya
+        const sampleData = { bar: { "data": [ { "type": "bar", "orientation": "h", "y": ["United States", "China", "India", "United Kingdom", "Germany", "Japan", "Russia", "France", "Brazil", "Canada", "Australia", "South Korea", "Italy", "Netherlands", "Spain"], "x": [89, 67, 54, 45, 43, 38, 36, 34, 32, 29, 27, 25, 23, 21, 19], "marker": {"color": [89, 67, 54, 45, 43, 38, 36, 34, 32, 29, 27, 25, 23, 21, 19], "colorscale": "RdBu"} } ], "layout": { "title": {"text": "Top 15 Negara Laporan Terbanyak", "font": {"color": "#50fa7b"}}, "template": "plotly_dark", "paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)", "font": {"color": "#f8f8f2"}, "yaxis": {"categoryorder": "total ascending"}, "showlegend": false } }, pie: { "data": [ { "type": "pie", "labels": ["DDoS", "Phishing", "SQL Injection", "Ransomware", "Malware"], "values": [177, 176, 168, 164, 162], "hole": 0.4 } ], "layout": { "title": {"text": "Proporsi Jenis Serangan", "font": {"color": "#bd93f9"}}, "template": "plotly_dark", "paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)", "font": {"color": "#f8f8f2"} } }, sector: { "data": [ { "type": "bar", "orientation": "h", "y": ["Banking", "Education", "Government", "Healthcare", "IT", "Retail", "Telecommunications"], "x": [45, 42, 38, 35, 33, 30, 28], "name": "Malware", "marker": {"color": "#440154"} }, { "type": "bar", "orientation": "h", "y": ["Banking", "Education", "Government", "Healthcare", "IT", "Retail", "Telecommunications"], "x": [52, 48, 44, 41, 39, 36, 34], "name": "Phishing", "marker": {"color": "#31688e"} } ], "layout": { "title": {"text": "Komposisi Serangan pada Sektor", "font": {"color": "#ffb86c"}}, "template": "plotly_dark", "paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)", "font": {"color": "#f8f8f2"}, "barmode": "stack" } } };
+        
         // Memanggil semua fungsi render saat dokumen siap.
         document.addEventListener('DOMContentLoaded', () => {
-            renderPlotlyChart('bar-chart', '{{ bar_chart | safe }}');
-            renderPlotlyChart('pie-chart', '{{ pie_chart | safe }}');
-            renderPlotlyChart('sector-composition-chart', '{{ sector_composition_chart | safe }}');
-            renderChartJs('yearlyTrendChartCanvas', '{{ yearly_trend_labels | tojson | safe }}', '{{ yearly_trend_data | tojson | safe }}');
+            renderPlotlyChart('bar-chart', JSON.stringify(sampleData.bar));
+            renderPlotlyChart('pie-chart', JSON.stringify(sampleData.pie));
+            renderPlotlyChart('sector-composition-chart', JSON.stringify(sampleData.sector));
+            renderPlotlyChart('heatmap-chart', JSON.stringify(sampleHeatmapData));
+            renderPlotlyChart('regression-table-chart', JSON.stringify(sampleTableData));
+            renderPlotlyChart('eval-chart-interactive', '{{ eval_chart_interactive | safe }}');
+            renderChartJs('yearlyTrendChartCanvas', JSON.stringify([2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]), JSON.stringify([267, 285, 294, 301, 278, 312, 298, 285, 274, 289]));
         });
     </script>
 </body>

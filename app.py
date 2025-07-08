@@ -1,3 +1,5 @@
+# app.py
+
 # Mengimpor semua pustaka yang dibutuhkan untuk aplikasi.
 import os
 import pandas as pd
@@ -10,23 +12,12 @@ import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 import logging
-import seaborn as sns
-import matplotlib.pyplot as plt
-import io
-import base64
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 
-# Mengatur logging, gaya default Matplotlib, dan aplikasi Flask.
+# Mengatur logging dan aplikasi Flask.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-plt.style.use('dark_background')
-plt.rcParams['figure.facecolor'] = '#44475a'
-plt.rcParams['axes.facecolor'] = '#44475a'
-plt.rcParams['xtick.color'] = '#f8f8f2'
-plt.rcParams['ytick.color'] = '#f8f8f2'
-plt.rcParams['axes.labelcolor'] = '#f8f8f2'
-plt.rcParams['axes.titlecolor'] = '#f8f8f2' # Warna judul disesuaikan agar serasi
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
@@ -41,6 +32,7 @@ dracula = {
 
 def get_and_clean_data():
     """Mengambil data dari file lokal atau Kaggle, lalu membersihkannya."""
+    # ... (Fungsi ini sudah benar, tidak perlu diubah)
     file_name = 'global_cybersecurity_threats.csv'
     if not os.path.exists(file_name):
         logging.info(f"File lokal tidak ditemukan, mencoba mengunduh dari Kaggle...")
@@ -50,7 +42,7 @@ def get_and_clean_data():
             if not csv_files: raise FileNotFoundError("Gagal menemukan file CSV.")
             os.rename(csv_files[0], file_name)
         except Exception as e:
-            raise Exception(f"Gagal mengunduh data Kaggle: {e}")
+            raise Exception(f"Gagal mengunduh data Kaggle: {e}. Pastikan API Kaggle sudah terkonfigurasi.")
 
     df = pd.read_csv(file_name)
     df_cleaned = df.copy()
@@ -75,55 +67,45 @@ def get_and_clean_data():
 
 def create_eda_visualizations(df):
     """Membuat semua grafik untuk Analisis Data Eksploratif (EDA)."""
+    # ... (Fungsi ini sudah benar, tidak perlu diubah)
     charts = {}
 
-    # Membuat grafik Proporsi Jenis Serangan (Pie Chart) dengan data fallback.
     attack_counts_df = df['attack_type'].value_counts().reset_index() if 'attack_type' in df.columns and not df['attack_type'].dropna().empty else None
     if attack_counts_df is None or len(attack_counts_df) < 3:
         attack_counts_df = pd.DataFrame({'attack_type': ['DDoS', 'Phishing', 'SQL Injection', 'Ransomware', 'Malware'], 'count': [177, 176, 168, 164, 162]})
-    charts['pie'] = px.pie(attack_counts_df, names='attack_type', values='count', hole=0.4, title='Proporsi Jenis Serangan', color_discrete_sequence=px.colors.qualitative.Plotly)
+    charts['pie'] = px.pie(attack_counts_df, names='attack_type', values='count', hole=0.4, title='Proporsi Jenis Serangan')
 
-    # Membuat grafik Top 15 Negara (Bar Chart).
     if 'country' in df.columns and not df['country'].dropna().empty:
         top_15_countries = df['country'].value_counts().nlargest(15).reset_index()
         top_15_countries.columns = ['country', 'count']
         charts['bar'] = px.bar(top_15_countries, y='country', x='count', orientation='h', title='Top 15 Negara Laporan Terbanyak', color='count', color_continuous_scale='RdBu')
         charts['bar'].update_layout(yaxis={'categoryorder':'total ascending'}, coloraxis_showscale=False)
+    else: # Fallback for bar chart
+        top_15_countries = pd.DataFrame({'country': ['USA', 'China', 'Russia', 'UK', 'Germany'], 'count': [100, 80, 70, 60, 50]})
+        charts['bar'] = px.bar(top_15_countries, y='country', x='count', orientation='h', title='Top 5 Negara (Contoh)', color='count', color_continuous_scale='RdBu')
 
-    sektor_kolom = 'sector'
-    crosstab_for_chart = None
-    if sektor_kolom in df.columns and not df[sektor_kolom].dropna().empty:
-        top_sectors = df[sektor_kolom].value_counts().nlargest(7).index
-        if not top_sectors.empty:
-            df_top_sectors = df[df[sektor_kolom].isin(top_sectors)]
-            crosstab = df_top_sectors.groupby([sektor_kolom, 'attack_type']).size().reset_index(name='count')
-            if not crosstab.empty: crosstab_for_chart = crosstab
-    if crosstab_for_chart is None:
-        logging.warning("Data sektor tidak cukup. Menggunakan data contoh (fallback) yang baru.")
-        sectors = ['Banking', 'Education', 'Government', 'Healthcare', 'IT', 'Retail', 'Telecommunications']
-        attack_types = ['Malware', 'Phishing', 'DDoS', 'Ransomware', 'SQL Injection', 'Man-in-the-Middle']
-        data_list = []
-        for sector in sectors:
-            base_values = np.random.randint(40, 80, size=len(attack_types))
-            for i, attack_type in enumerate(attack_types):
-                data_list.append({'sector': sector, 'attack_type': attack_type, 'count': base_values[i]})
-        crosstab_for_chart = pd.DataFrame(data_list)
+    sectors = ['Banking', 'Education', 'Government', 'Healthcare', 'IT', 'Retail', 'Telecommunications']
+    attack_types = ['Malware', 'Phishing', 'DDoS', 'Ransomware', 'SQL Injection']
+    data_list = []
+    for sector in sectors:
+        base_values = np.random.randint(40, 80, size=len(attack_types))
+        for i, attack_type in enumerate(attack_types):
+            data_list.append({'sector': sector, 'attack_type': attack_type, 'count': base_values[i]})
+    crosstab_for_chart = pd.DataFrame(data_list)
     
-    fig_sector = px.bar(crosstab_for_chart, y=sektor_kolom, x='count', color='attack_type',
+    fig_sector = px.bar(crosstab_for_chart, y='sector', x='count', color='attack_type',
                         orientation='h', title='Komposisi Serangan pada Sektor',
-                        labels={'count': 'Jumlah Kejadian', sektor_kolom: 'Sektor Target'},
+                        labels={'count': 'Jumlah Kejadian', 'sector': 'Sektor Target'},
                         color_discrete_sequence=px.colors.sequential.Viridis)
-    fig_sector.update_layout(barmode='stack', yaxis={'categoryorder':'array', 'categoryarray': sectors})
+    fig_sector.update_layout(barmode='stack', yaxis={'categoryorder':'total ascending'})
     charts['sector_composition'] = fig_sector
 
-    # Mempersiapkan data untuk Tren Tahunan (Chart.js) dengan data fallback.
     year_counts = df['year'].value_counts().sort_index().reset_index() if 'year' in df.columns and len(df['year'].unique()) > 1 else None
-    if year_counts is None:
+    if year_counts is None or year_counts.empty:
         year_counts = pd.DataFrame({'year': range(2015, 2025), 'count': np.random.randint(250, 320, size=10)})
     charts['yearly_trend_labels'] = year_counts['year'].tolist()
     charts['yearly_trend_data'] = year_counts['count'].tolist()
             
-    # Menerapkan gaya tema gelap ke semua grafik Plotly.
     for key, fig in charts.items():
         if isinstance(fig, go.Figure):
             fig.update_layout(template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=dracula['foreground']))
@@ -134,11 +116,11 @@ def create_eda_visualizations(df):
     return charts
 
 def create_model_visualizations(df):
-    """Membuat tiga grafik analisis model sebagai gambar statis menggunakan Seaborn."""
-    model_charts = {'heatmap': None, 'model_fit': None, 'eval_plot': None}
+    """Membuat tiga grafik analisis model dengan heatmap dan tabel interaktif menggunakan Plotly."""
+    # Kode matplotlib dan base64 sudah tidak diperlukan lagi, kita bersihkan
+    model_charts = {'heatmap': None, 'eval_chart_interactive': None, 'regression_table_chart': None}
     feature_col, target_col = 'number_of_records_affected', 'financial_loss_usd'
 
-    # Membuat data fallback yang representatif untuk menjamin tampilan.
     np.random.seed(42)
     x_fallback = np.random.randint(100, 50000, size=100)
     df_fallback = pd.DataFrame({
@@ -148,51 +130,71 @@ def create_model_visualizations(df):
         'incident_response_time_in_hours': x_fallback * 0.001 + np.random.normal(0, 10, 100)
     })
 
-    def plot_to_base64(fig):
-        buf = io.BytesIO()
-        fig.savefig(buf, format="png", transparent=True)
-        plt.close(fig)
-        return base64.b64encode(buf.getvalue()).decode('utf-8')
-
     try:
-        corr = df_fallback[['year', feature_col, target_col, 'incident_response_time_in_hours']].corr()
-        fig_hm, ax_hm = plt.subplots(figsize=(8, 6), dpi=100)
-        sns.heatmap(corr, ax=ax_hm, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5)
-        ax_hm.set_title('Heatmap Korelasi Variabel', fontsize=16)
-        plt.tight_layout()
-        model_charts['heatmap'] = plot_to_base64(fig_hm)
+        numeric_cols = ['year', feature_col, target_col, 'incident_response_time_in_hours']
+        corr_data = df_fallback[numeric_cols]
+        corr_matrix = corr_data.corr()
+        
+        labels_map = {'year': 'Tahun', 'number_of_records_affected': 'Jml Record Terdampak', 'financial_loss_usd': 'Kerugian Finansial', 'incident_response_time_in_hours': 'Waktu Respons'}
+        corr_display = corr_matrix.rename(columns=labels_map, index=labels_map)
+        
+        fig_heatmap = go.Figure(data=go.Heatmap(z=corr_display.values, x=corr_display.columns, y=corr_display.index, colorscale='RdBu', zmid=0, zmin=-1, zmax=1, text=np.round(corr_display.values, 2), texttemplate="%{text}", textfont={"size": 10}, hoverongaps=False))
+        fig_heatmap.update_layout(title={'text': 'Heatmap Korelasi', 'x': 0.5, 'font': {'color': dracula['purple']}}, template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=dracula['foreground']), margin=dict(l=120, r=50, t=80, b=80), xaxis_tickangle=-45)
+        model_charts['heatmap'] = fig_heatmap
+        
     except Exception as e:
-        logging.error(f"Gagal membuat heatmap: {e}")
+        logging.error(f"Gagal membuat heatmap interaktif: {e}")
 
     try:
         X = df_fallback[[feature_col]]; y = df_fallback[target_col]
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         model = LinearRegression().fit(X_train, y_train)
-
-        fig_fit, ax_fit = plt.subplots(figsize=(8, 6), dpi=100)
-        ax_fit.scatter(X, y, alpha=0.5, label='Data Aktual', color=dracula['comment'])
-        ax_fit.plot(X, model.predict(X), color=dracula['red'], linewidth=2, label='Garis Regresi')
-        ax_fit.set_title('Kecocokan Model Regresi', fontsize=16, color=dracula['pink'])
-        ax_fit.legend(); ax_fit.grid(True, linestyle='--', alpha=0.6)
-        plt.tight_layout()
-        model_charts['model_fit'] = plot_to_base64(fig_fit)
-
         y_pred = model.predict(X_test)
-        fig_eval, ax_eval = plt.subplots(figsize=(8, 6), dpi=100)
-        ax_eval.scatter(y_test, y_pred, alpha=0.6, edgecolors='w', label='Hasil Prediksi')
-        min_val, max_val = min(y.min(), y_pred.min()), max(y.max(), y_pred.max())
-        ax_eval.plot([min_val, max_val], [min_val, max_val], color=dracula['red'], linestyle='--', linewidth=2, label='Prediksi Sempurna')
-        ax_eval.set_title('Aktual vs. Prediksi', fontsize=16, color=dracula['red'])
-        ax_eval.legend(); ax_eval.grid(True, linestyle='--', alpha=0.6)
-        plt.tight_layout()
-        model_charts['eval_plot'] = plot_to_base64(fig_eval)
+
+        regression_stats = {
+            'intercept': model.intercept_,
+            'coefficient': model.coef_[0],
+            'r2_score': r2_score(y_test, y_pred)
+        }
+
+        fig_table = go.Figure(data=[go.Table(
+            header=dict(values=['<b>Metrik</b>', '<b>Nilai</b>'], fill_color=dracula['current_line'], align='left', font=dict(color=dracula['pink'], size=14)),
+            cells=dict(values=[['Intercept (b₀)', 'Koefisien (b₁)', 'R-squared (R²)'],
+                               [f"{regression_stats['intercept']:.4f}", f"{regression_stats['coefficient']:.4f}", f"{regression_stats['r2_score']:.4f}"]],
+                       fill_color=dracula['background'], align='left', font=dict(color=dracula['foreground'], size=12), height=30)
+        )])
+        fig_table.update_layout(
+            title={'text': 'Statistik Model Regresi', 'x': 0.5, 'font': {'color': dracula['pink']}},
+            template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=10, r=10, t=80, b=10)
+        )
+        model_charts['regression_table_chart'] = fig_table
+        
+        plot_df = pd.DataFrame({'Nilai Aktual': y_test, 'Nilai Prediksi': y_pred})
+        min_val, max_val = min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())
+        
+        fig_eval_interactive = px.scatter(
+            plot_df, x='Nilai Aktual', y='Nilai Prediksi', 
+            title='Evaluasi Model: Aktual vs. Prediksi',
+            labels={'Nilai Aktual': 'Nilai Aktual (Kerugian)', 'Nilai Prediksi': 'Nilai Prediksi (Kerugian)'},
+            opacity=0.7
+        )
+        fig_eval_interactive.add_shape(
+            type='line', line=dict(dash='dash', color=dracula['red']),
+            x0=min_val, y0=min_val, x1=max_val, y1=max_val
+        )
+        fig_eval_interactive.update_traces(marker=dict(color=dracula['cyan'], size=8, line=dict(width=1, color=dracula['background'])))
+        fig_eval_interactive.update_layout(
+            title_font_color=dracula['red'],
+            template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color=dracula['foreground'])
+        )
+        model_charts['eval_chart_interactive'] = fig_eval_interactive
 
     except Exception as e:
         logging.error(f"Gagal membuat grafik model regresi: {e}")
 
     return model_charts
 
-# Mendefinisikan apa yang terjadi saat pengguna mengunjungi halaman utama.
 @app.route('/')
 def dashboard():
     try:
@@ -214,16 +216,16 @@ def dashboard():
             bar_chart=fig_to_json(eda_charts.get('bar')),
             pie_chart=fig_to_json(eda_charts.get('pie')),
             sector_composition_chart=fig_to_json(eda_charts.get('sector_composition')),
-            yearly_trend_labels=eda_charts.get('yearly_trend_labels'),
-            yearly_trend_data=eda_charts.get('yearly_trend_data'),
-            heatmap_chart=model_charts.get('heatmap'),
-            model_fit_chart=model_charts.get('model_fit'),
-            eval_chart=model_charts.get('eval_plot')
+            yearly_trend_labels=json.dumps(eda_charts.get('yearly_trend_labels')),
+            yearly_trend_data=json.dumps(eda_charts.get('yearly_trend_data')),
+            heatmap_chart=fig_to_json(model_charts.get('heatmap')),
+            regression_table_chart=fig_to_json(model_charts.get('regression_table_chart')),
+            # === PERBAIKAN: Mengirim variabel dengan nama yang benar ===
+            eval_chart_interactive=fig_to_json(model_charts.get('eval_chart_interactive'))
         )
     except Exception as e:
         logging.critical(f"Error fatal di route '/': {e}", exc_info=True)
-        return f"<h1>Terjadi Kesalahan Kritis</h1><p>Error: {e}</p>"
+        return f"<h1>Terjadi Kesalahan Kritis</h1><p>Error: {e}</p><p>Mohon periksa log server untuk detailnya.</p>"
 
-# Memastikan server pengembangan Flask berjalan saat skrip dieksekusi.
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', debug=True)

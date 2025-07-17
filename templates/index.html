@@ -61,7 +61,7 @@
 
             <div class="col-lg-4 col-md-12">
                 <div class="card chart-container">
-                    <div id="eval-chart-interactive"></div>
+                    <div id="prediction-chart"></div>
                 </div>
             </div>
             </div>
@@ -74,18 +74,35 @@
     </div>
 
     <script>
-        // Fungsi untuk merender grafik Plotly dengan aman.
         const plotlyConfig = { responsive: true, displaylogo: false };
         function renderPlotlyChart(elementId, chartJson) {
             const el = document.getElementById(elementId);
             if (!el) return;
             try {
-                if (!chartJson || chartJson === 'null') throw new Error("Data JSON kosong.");
+                if (!chartJson || chartJson === 'null') { throw new Error("Data JSON kosong."); }
                 const chart = JSON.parse(chartJson);
                 Plotly.newPlot(el, chart.data, chart.layout, plotlyConfig);
             } catch (e) {
                 console.error("Error rendering Plotly chart:", e, "for element:", elementId);
-                el.innerHTML = `<div class="alert-msg">Gagal memuat grafik.</div>`;
+                el.innerHTML = `<div class="alert-msg">Gagal memuat grafik. Periksa konsol untuk detail.</div>`;
+            }
+        }
+        
+        function renderChartJs(canvasId, labelsJson, dataJson) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            try {
+                if (!labelsJson || !dataJson) { throw new Error("Data JSON kosong."); }
+                const labels = JSON.parse(labelsJson);
+                const data = JSON.parse(dataJson);
+                new Chart(canvas, {
+                    type: 'line',
+                    data: { labels: labels, datasets: [{ data: data, borderColor: 'rgb(189, 147, 249)', tension: 0.1, pointBackgroundColor: '#f8f8f2', pointBorderColor: 'rgb(189, 147, 249)', pointRadius: 5, pointHoverRadius: 7 }] },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(98, 114, 164, 0.5)' }, ticks: { color: '#f8f8f2' } }, x: { grid: { color: 'rgba(98, 114, 164, 0.5)' }, ticks: { color: '#f8f8f2' } } }, plugins: { legend: { display: false } } }
+                });
+            } catch (e) {
+                console.error("Error rendering Chart.js:", e);
+                canvas.parentElement.innerHTML = `<div class="alert-msg">Gagal memuat grafik tren.</div>`;
             }
         }
         
@@ -150,11 +167,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderPlotlyChart('bar-chart', JSON.stringify(sampleData.bar));
             renderPlotlyChart('pie-chart', JSON.stringify(sampleData.pie));
-            renderPlotlyChart('sector-composition-chart', JSON.stringify(sampleData.sector));
+            renderPlotlyChart('sector-composition-chart', '{{ sector_composition_chart | safe }}');
             renderPlotlyChart('heatmap-chart', JSON.stringify(sampleHeatmapData));
-            renderPlotlyChart('regression-table-chart', JSON.stringify(sampleTableData));
-            renderPlotlyChart('eval-chart-interactive', '{{ eval_chart_interactive | safe }}');
-            renderChartJs('yearlyTrendChartCanvas', JSON.stringify([2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]), JSON.stringify([267, 285, 294, 301, 278, 312, 298, 285, 274, 289]));
+            renderPlotlyChart('regression-table-chart', '{{ regression_table_chart | safe }}');
+            renderPlotlyChart('prediction-chart', '{{ prediction_chart | safe }}');
+            renderChartJs('yearlyTrendChartCanvas', '{{ yearly_trend_labels | safe }}', '{{ yearly_trend_data | safe }}');
         });
     </script>
 </body>

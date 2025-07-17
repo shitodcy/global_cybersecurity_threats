@@ -1,5 +1,3 @@
-/* --- 1. Variabel Warna & Gaya Dasar --- */
-/* Mendefinisikan palet warna Dracula dan gaya dasar untuk body. */
 :root {
     --dracula-bg: #282a36;
     --dracula-line: #44475a;
@@ -22,8 +20,8 @@ body {
     padding: 2rem;
 }
 
-/* --- 2. Gaya Kartu --- */
-/* Mengatur tampilan semua kartu di dasbor. */
+
+
 .card {
     background-color: var(--dracula-line);
     border: 1px solid var(--dracula-comment);
@@ -38,20 +36,20 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
-/* --- 3. Gaya Kartu KPI --- */
-/* Mengatur gaya khusus untuk kartu ringkasan data di bagian atas. */
+
+
 .kpi-card {
     display: flex;
-    flex-direction: column; /* Mengubah arah menjadi vertikal */
-    justify-content: center; /* Menengahkan konten secara vertikal */
-    align-items: center; /* Menengahkan konten secara horizontal */
-    text-align: center; /* Memastikan teks di tengah */
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    text-align: center; 
     padding: 1.5rem;
 }
 .kpi-card .icon-wrapper {
     font-size: 2.5rem;
     color: var(--icon-color, var(--dracula-cyan));
-    margin-bottom: 1rem; /* Memberi jarak antara ikon dan teks */
+    margin-bottom: 1rem; 
 }
 .kpi-card h5 {
     color: var(--dracula-comment);
@@ -64,8 +62,8 @@ body {
     margin-bottom: 0;
 }
 
-/* --- 4. Gaya Penampung Grafik --- */
-/* Mengatur penampung untuk semua jenis grafik. */
+
+
 .chart-container {
     padding: 1.5rem;
     flex-grow: 1;
@@ -91,8 +89,8 @@ body {
     max-height: 100%;
 }
 
-/* --- 5. Gaya Teks & Judul --- */
-/* Mengatur tampilan tipografi di seluruh dasbor. */
+
+
 h1, h2, h3, h4, h5, h6 { font-weight: 600; }
 h1 { color: var(--dracula-fg); }
 h3 { color: var(--dracula-cyan); margin-top: 1rem; margin-bottom: 1.5rem; }
@@ -103,8 +101,8 @@ h3 { color: var(--dracula-cyan); margin-top: 1rem; margin-bottom: 1.5rem; }
     margin-bottom: 1rem;
 }
 
-/* --- 6. Lain-lain --- */
-/* Gaya untuk footer dan pesan peringatan. */
+
+
 hr {
     border: none;
     height: 1px;
